@@ -46,7 +46,7 @@ yarn build
 Товар
 
 ```
-export interface IProduct {
+interface IProduct {
     id?: string;
     description?: string;
     image?: string;
@@ -57,7 +57,7 @@ export interface IProduct {
 ```
 Заказ
 ```
-export interface IOrder {
+interface IOrder {
     payment: string;
     email: string;
     phone: string;
@@ -68,23 +68,23 @@ export interface IOrder {
 ```
 Данные о товаре, используемые в модуле товара
 ```
-export type TProductInfo = Pick<IProduct, 'description' | 'category' | 'image' | 'price' | 'title'>
+type TProductInfo = Pick<IProduct, 'description' | 'category' | 'image' | 'price' | 'title'>
 ```
 Данные о заказе в попапе корзины пользователя
 ```
-export type TBasketInfo = Pick<IOrder, 'items' | 'total'>
+type TBasketInfo = Pick<IOrder, 'items' | 'total'>
 ```
 Данные о заказе в форме об оплате и адресе
 ```
-export type TOrderInfo = Pick<IOrder, 'payment' | 'address'>
+type TOrderInfo = Pick<IOrder, 'payment' | 'address'>
 ```
 Данные о заказе в форме с контактами покупателя
 ```
-export type TUserInfo = Pick<IOrder, 'email' | 'phone'>
+type TUserInfo = Pick<IOrder, 'email' | 'phone'>
 ```
 Данные о заказе в форме об успехе заказа
 ```
-export type TSuccessInfo = Pick<IOrder, 'total'>
+type TSuccessInfo = Pick<IOrder, 'total'>
 ```
 ## Архитектура приложения
 
@@ -115,11 +115,14 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 Класс отвечает за хранение и логику работы с товарами в магазине.\
 Конструктор класса принимает инстант брокера событий\
 В полях класса хранятся следующие данные:
-- _product: IProducts[] - массив объектов товаров
+- _product: IProduct[] - массив объектов товаров
 - _events: Ivents - экземпляр класса
 
 Также класс предоставляет метод для работы с этими данными:
 - getProductInfo(productId: string): TProductInfo; - метод, который возвращает основные данные карточки для отображения на сайте
+- getProductItem(products: Iproduct[], productId: string): TProductInfo - метод, который возвращает 1 товар
+- set products(): [] - сохранение массива товаров в классе
+- getAllProducts(): IProduct[] - метод вывода всех товаров, которые есть в магазине
 
 #### Класс OrderData
 Класс отвечает за хранение и логику работы с заказом в магазине.\
@@ -132,10 +135,20 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 - items: []; - массив id выбранных товаров
 
 Также класс предоставляет метод для работы с этими данными:
-- getItems(productId: string): TProductInfo; - возвращает данные о тех товарах, которые пользователь добавил в корзину
+- addProductToCart(productId: string): void - добавляет товары в корзину
+- setProductsInfo(productMassive[]): void - сохраняет данные о товарах в корзине
+- getProductsInfo(): { TProductInfo } - выводит список товаров в корзине
+- getItem(productId: string): TProductInfo; - возвращает данные о том товаре, который пользователь добавил в корзину
+- isProductInCart(productId: string): boolean - проверяет наличие товара в корзине
 - deleteProduct(productId: string, payload: Function | null): void; - удаляет товары из корзины
 - countTotal(productMassive: []): number | null; - считает сумму корзины
+- setTotal(productTotal: number): void - сохраняет данные о сумме корзины
+- getTotal(): number - получает данные о сумме корзины
+- checkTotal(productMassive: []): boolean - проверяет, чтобы сумма корзины была больше 0
 - choosePayment(paymentElement: HTMLButtonElement, payload: Function | null): void; - выбирает способ оплаты
+- setPayment(paymentInfo: string): void - сохраняет информацию способе оплаты
+- setUserData(email: string, phone: string, address: string): void - сохраняет данные пользователя в корзине
+- getUserData(): { email: string; phone: string; address: string } - получает данные пользователя из корзины
 - checkValidationOrder(data: Record<keyof TOrderInfo, string>): boolean; - проверяет правильность заполнения поля в форме заказа
 - checkValidationUser(data: Record<keyof TUserInfo, string>): boolean; - проверяет правильность заполнения полей в форме данных пользователя
 
@@ -172,7 +185,6 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 
 Методы класса:
 - setData(cardData: IProduct): void - заполняет атрибуты элементов карточки данными
-- isBought(): boolean - метод возвращает наличие товара в корзине (кликали по кнопке "купить" уже или нет)
 - render(): void - метод возвращает заполненную карточку со слушетелями
 - get id: string - возвращаяет уникальный id карточки
 
@@ -192,7 +204,7 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 - render(data: HTMLElement): - реализует отрисовку модального окна
 
 #### Класс Form
-Реализует формы на странице.
+Родительский класс для всех форм для страницы.
 
 - constructor(container: HTMLElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий
 
@@ -202,17 +214,44 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 - formName: string - значение атрибута name формы
 - handleSubmit: Function - функция, на выполнение который запрашивается подтверждение
 - inputs: NodeListOf`<HTMLInputElement>` - коллекция всех полей ввода
-- errors: Record`<string, HTMLElement>` - обхект, хранящий все элементы для вывода ошибок под полями формы с привязкой к атрибуту name инпутов
+- error: HTMLElement - элемент для вывода ошибок в форме
 
 Методы класса:
+- render(data: HTMLElement): void - метод реализует отрисовку формы
 - setValid(isValid: boolean): void - изменияет активность кнопки подтверждения
 - getInputValues(): Record`<string, string>`- возвращает объект с данными из полей формы, где ключ - name инпута, значение - данные, введенные пользователем
 - setInputValues(data: Record`<string, string>`): void - принимает объект с данными для заполнения полей формы
-- setError(data: {field: string, value: string, validInformation: string}): void - принимает обхект с данными для отображения или сокрытия текстов ошибок под полями ввода
-- showInputError(field: string, showMessage: string): void - отображает полученный текст ошибки под указанным полем ввода
-- hideInputError(field: string): void - очищает текст ошибки под указанным полем ввода
+- setError(data: {field: string, value: string, validInformation: string}): void - принимает объект с данными для отображения или сокрытия текстов ошибок в поле ошибки
+- showInputError(field: string, showMessage: string): void - отображает полученный текст ошибки в поле ошибки
+- hideInputError(field: string): void - очищает текст ошибки в поле ошибки
 - get form: HTMLElement - геттер для получения элемента формы
-- close(): void - очищает поля формы при закрытии поля ввода
+-  handleFormChange(): void - метод, отвечающий за вызов события изменения формы
+- submitForm(): void - метод, отвечающий за сабмит формы
+
+#### Класс OrderForm
+Расширение класса Form, класс для формы заказа (выбор оплаты и ввод адреса).
+
+- constructor(container: HTMLElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий
+
+Поля класса:
+- onlinePaymentButton: HTMLElement - кнопка оплаты онлайн
+- offlinePaymentButton: HTMLElement - кнопка оплаты наличными
+
+Методы класса:
+- managePayment(onlinePaymentButton: HTMLElement, offlinePaymentButton: HTMLElement): void - метод реализует выбор способа оплаты в форме
+- handleFormChange(): void - метод расширяет родительский метод, отвечающий за вызов события изменения формы
+- submitForm(): void - метод, отвечающий за сабмит формы: её сохранение и переключение на следующую форму
+
+#### Класс ContactsForm
+Расширение класса Form, класс для записи контактной информации (телефон и имейл)
+
+- constructor(container: HTMLElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий
+
+Поля класса такие же, как и в родительском классе
+
+Методы класса:
+-  handleFormChange(): void - метод расширяет родительский метод, отвечающий за вызов события изменения формы
+- submitForm(): void - метод, отвечающий за сабмит формы: её сохранения и далее переключение на страницу успеха с помощью цепочки событий
 
 #### Класс Basket
 Реализует отрисовку формы корзины и её работу
@@ -221,14 +260,12 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 
 Поля класса:
 - list: HTMLElement - список товаров в корзине
-- deleteItemButton - кнопка удаления товара из корзины
 - total: HTMLElement - сумма товаров в корзине
 - submitButton - кнопка подтверждения заказа
 
 Методы класса:
-- set items(items: HTMLElement[]) - устанавливает данные товаров, содержащихся в корзине
-- get total(): number - получаем данные о сумме товаров в корзине
-- set total(): number - устанавливаем сумму товаров в корзине
+- render(data: HTMLElement): void - метод реализует отрисовку списка товаров в корзине
+- set items(items: HTMLElement[]): void - устанавливает данные товаров, содержащихся в корзине
 - deleteItem(): void - метод для удаления товара из корзины
 
 #### Класс Success
@@ -242,6 +279,9 @@ export type TSuccessInfo = Pick<IOrder, 'total'>
 ### Слой коммуникаций
 
 #### Класс AppApi
+Принимает в конструктор экземпляр класса Api и предоставляет методы, реализующие взаимодействие с бэкендом сервиса.
+
+## Взаимодействие компонентов
 Код, описывающий взаимодействие представления и данных между собой находится в файле 'index.ts', выполняющем роль презентера.\
 Взаимодействие осуществляется за счет событий, генерируемых с помощью брокера событий и обработчиков этих событий, описанных в 'index.ts'\
 В 'index.ts' сначала создаются экземпляры всех необходимых классов, а затем настраивается обработка событий
