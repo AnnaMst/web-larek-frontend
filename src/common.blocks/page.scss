@@ -10,6 +10,7 @@ html, body.page {
 
 .page__wrapper {
 	width: 100%;
+	position: relative;
 
 	&_locked {
 		position: fixed;

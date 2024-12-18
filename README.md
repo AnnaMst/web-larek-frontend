@@ -119,10 +119,9 @@ type TSuccessInfo = Pick<IOrder, 'total'>
 - _events: Ivents - экземпляр класса
 
 Также класс предоставляет метод для работы с этими данными:
-- getProductInfo(productId: string): TProductInfo; - метод, который возвращает основные данные карточки для отображения на сайте
-- getProductItem(products: Iproduct[], productId: string): TProductInfo - метод, который возвращает 1 товар
-- set products(): [] - сохранение массива товаров в классе
-- getAllProducts(): IProduct[] - метод вывода всех товаров, которые есть в магазине
+- get products(); - метод, который возвращает основные данные карточки для отображения на сайте
+- set products(products: IProduct[]): void - сохранение массива товаров в классе
+- getProductItem(products: IProduct[], productId: string): TProductInfo - метод возвращает 1 товар из массива по ID
 
 #### Класс OrderData
 Класс отвечает за хранение и логику работы с заказом в магазине.\
@@ -136,15 +135,12 @@ type TSuccessInfo = Pick<IOrder, 'total'>
 
 Также класс предоставляет метод для работы с этими данными:
 - addProductToCart(productId: string): void - добавляет товары в корзину
-- setProductsInfo(productMassive[]): void - сохраняет данные о товарах в корзине
 - getProductsInfo(): { TProductInfo } - выводит список товаров в корзине
 - getItem(productId: string): TProductInfo; - возвращает данные о том товаре, который пользователь добавил в корзину
 - isProductInCart(productId: string): boolean - проверяет наличие товара в корзине
 - deleteProduct(productId: string, payload: Function | null): void; - удаляет товары из корзины
 - countTotal(productMassive: []): number | null; - считает сумму корзины
-- setTotal(productTotal: number): void - сохраняет данные о сумме корзины
 - getTotal(): number - получает данные о сумме корзины
-- checkTotal(productMassive: []): boolean - проверяет, чтобы сумма корзины была больше 0
 - choosePayment(paymentElement: HTMLButtonElement, payload: Function | null): void; - выбирает способ оплаты
 - setPayment(paymentInfo: string): void - сохраняет информацию способе оплаты
 - setUserData(email: string, phone: string, address: string): void - сохраняет данные пользователя в корзине
@@ -184,7 +180,6 @@ type TSuccessInfo = Pick<IOrder, 'total'>
 Поля класса содержат элементы разметки элементов карточки. Конструктор, кроме темплейта, принимает экземпляр 'EventEmitter' для инициации событий.\
 
 Методы класса:
-- setData(cardData: IProduct): void - заполняет атрибуты элементов карточки данными
 - render(): void - метод возвращает заполненную карточку со слушетелями
 - get id: string - возвращаяет уникальный id карточки
 
@@ -304,3 +299,4 @@ type TSuccessInfo = Pick<IOrder, 'total'>
 - 'contacts:input' - событие, сохранение данных в форме данных заказа о пользователе
 - 'contacts:validation' - событие, сообщающее о необходимости валидации формы данных заказа о пользователе
 - 'success:submit' - переход из модального окна успеха на главную страницу
+- 'products:changed' - событие, сообщающее об изменении массива продуктов
