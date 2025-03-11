@@ -15,6 +15,17 @@ export class OrderData implements IOrder {
         this.items = []
     }
 
+    getOrderData() {
+        return {
+            payment: this.payment,
+            email:this.email,
+            phone: this.phone,
+            address: this.address,
+            total: this.total,
+            items: this.items
+        }
+    }
+
     // Метод получения списка товаров в корзине
     getProductsInfo(): string[] {
         return this.items
@@ -60,65 +71,47 @@ export class OrderData implements IOrder {
         return this.items.length
     }
 
-    // Метод сохранения информации о способе оплаты
-    public setPaymentMethod(paymentInfo: string): void {
-        this.payment = paymentInfo;
+    setOrderItemsData(items: string[], total: number): void {
+        this.items = items;
+        this.total = total
+    }
+
+    setPaymentData(payment: string): void {
+        this.payment = payment
+        this._events.emit('payment:saved', {payment: this.payment})
+    }
+    setAddressData(address: string): void {
+        this.address = address
+        this._events.emit('address:saved')
+        console.log(this.address)
     }
 
     // Метод сохранения данных пользователя
-    setUserData(email: string, phone: string, address: string): void {
-        this.email = email;
-        this.phone = phone;
-        this.address = address;
+    setUserData(field: string, value: string): void {
+        if (field === 'phone') {
+            this.phone = value;
+        }
+        if (field === 'email'){
+            this.email = value;
+        }
     }
 
     // Метод получения данных пользователя
-    public getUserData(): { email: string; phone: string; address: string } {
+    public getUserData(): { email: string; phone: string; address: string, payment: string } {
         return {
         email: this.email,
         phone: this.phone,
         address: this.address,
+        payment: this.payment
         };
     }
 
-    // Метод проверки правильности заполнения формы заказа
-    public checkValidationOrder(address: string): boolean {
-        if (address !== null || undefined) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    // Метод проверки правильности заполнения формы данных пользователя
-    public checkValidationUser(data: Record<'email' | 'phone', string>): boolean {
-        const { email, phone } = data;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
-
-        return emailRegex.test(email) && phoneRegex.test(phone);
+    public deleteItems () {
+        this.payment = '';
+        this.email = '';
+        this.phone = '';
+        this.address = '';
+        this.total = 0;
+        this.items = undefined;
     }
 }
-
-
-/*- payment: string; - метод оплаты товара
-- email: string; - имейл пользователя
-- phone: string; - номер телефона пользователя
-- address: string; - адрес, введённый пользователем
-- items: []; - массив id выбранных товаров
-
-Также класс предоставляет метод для работы с этими данными:
-- addProductToCart(productId: string): void - добавляет товары в корзину
-- getProductsInfo(): { TProductInfo } - выводит список товаров в корзине
-- getItem(productId: string): TProductInfo; - возвращает данные о том товаре, который пользователь добавил в корзину
-- isProductInCart(productId: string): boolean - проверяет наличие товара в корзине
-- deleteProduct(productId: string, payload: Function | null): void; - удаляет товары из корзины
-- countTotal(productMassive: []): number | null; - считает сумму корзины
-- getTotal(): number - получает данные о сумме корзины
-- choosePayment(paymentElement: HTMLButtonElement, payload: Function | null): void; - выбирает способ оплаты
-- setPayment(paymentInfo: string): void - сохраняет информацию способе оплаты
-- setUserData(email: string, phone: string, address: string): void - сохраняет данные пользователя в корзине
-- getUserData(): { email: string; phone: string; address: string } - получает данные пользователя из корзины
-- checkValidationOrder(data: Record<keyof TOrderInfo, string>): boolean; - проверяет правильность заполнения поля в форме заказа
-- checkValidationUser(data: Record<keyof TUserInfo, string>): boolean; - проверяет правильность заполнения полей в форме данных пользователя
-*/

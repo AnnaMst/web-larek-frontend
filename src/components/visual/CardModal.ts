@@ -26,43 +26,5 @@ export class CardsModal extends Card {
             this.cardButton.textContent = 'Купить'
         }
     }
+    
 }
-
-/*
-
-toggleButton2(): void {
-        if (this.cardButton.textContent = 'Купить') {
-            this.cardButton.textContent = 'Удалить из корзины'
-            this.removeCardButtonListener()
-        } else if (this.cardButton.textContent = 'Удалить из корзины') {
-            this.initializeRemoveCardButtonListener()
-            this.cardButton.textContent = 'Купить'
-        }
-    }
-
-
-    public initializeCardButtonListener(): void {
-        if (this.cardButton) {
-            this.cardButtonClickHandler = () => {
-                this.events.emit('cardButton:click', { card: this });
-            };
-            this.cardButton.addEventListener('click', this.cardButtonClickHandler);
-        }
-    }
-
-    public initializeRemoveCardButtonListener(): void {
-        if (this.cardButton) {
-            this.cardButtonClickHandler = () => {
-                this.events.emit('basketItem:delete', { card: this });
-            };
-            this.cardButton.addEventListener('click', this.cardButtonClickHandler);
-        }
-    }
-
-    public removeCardButtonListener(): void {
-        if (this.cardButton && this.cardButtonClickHandler) {
-            this.cardButton.removeEventListener('click', this.cardButtonClickHandler);
-            this.cardButtonClickHandler = null;
-        }
-    }
-*/

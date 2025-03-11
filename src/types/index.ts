@@ -1,14 +1,9 @@
 import { IEvents } from "../components/base/events";
 
 export interface IApiProductList {
-    total: number;
+    total?: number;
     items: IProduct[]
 }
-
-export type ApiListResponse<Type> = {
-    total: number,
-    items: Type[]
-};
 
 export interface IProduct {
     id: string;
@@ -28,28 +23,9 @@ export interface IOrder {
     items: string[];
 }
 
-/описываем объект, который создаётся на основе класса/
-export interface IProductsData extends IApiProductList {
-    _events: IEvents;
-    getProductItem(products: IProduct[], productId: string): IProduct
-}
-
-export interface IOrderData {
-    getItems(productId: string): IProduct;
-    deleteProduct(productId: string, payload: Function | null): void;
-    countTotal(productMassive: []): number | null;
-    choosePayment(paymentElement: HTMLButtonElement, payload: Function | null): void;
-    checkValidationOrder(data: Record<keyof TOrderInfo, string>): boolean;
-    checkValidationUser(data: Record<keyof TUserInfo, string>): boolean;
-}
-
-export type TBasketInfo = Pick<IOrder, 'items' | 'total'>;
-
 export type TOrderInfo = Pick<IOrder, 'payment' | 'address'>;
 
 export type TUserInfo = Pick<IOrder, 'email' | 'phone'>;
-
-export type TSuccessInfo = Pick<IOrder, 'total'>;
 
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 

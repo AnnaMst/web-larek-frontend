@@ -5,7 +5,6 @@ import { IApiProductList, IProduct } from "../types"
 import { IEvents } from "./base/events"
 
 export class ProductData implements IApiProductList {
-    total: number;
     items: IProduct[];
     protected _events: IEvents;
     protected _preview: string | null;
@@ -24,6 +23,8 @@ export class ProductData implements IApiProductList {
 
 
     getProductItem(productId: string): IProduct {
+        console.log(this.items.find((item) => item.id === productId))
+        
         return this.items.find((item) => item.id === productId)
     }
 
@@ -35,11 +36,11 @@ export class ProductData implements IApiProductList {
         const selectedCard = this.getProductItem(cardId);
         if (selectedCard) {
             this._preview = cardId;
-            this._events.emit('card:selected')
+            this._events.emit('card:select')
         }
     }
 
-    get preview () {
+    get preview (): string|null {
         return this._preview;
     }
 }

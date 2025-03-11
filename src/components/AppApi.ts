@@ -1,9 +1,9 @@
-import { IApi, IProduct, IOrder, ApiListResponse } from "../types";
+import { IApi, IProduct, IOrder, IApiProductList } from "../types";
 import { Api } from "./base/api";
 
 interface IAppApi {
     getProducts(): Promise<IProduct[]>
-    postOrderData(orderID: string, data: IOrder): Promise<IOrder>
+    postOrderData(data: IOrder): Promise<IOrder>
 }
 
 export class AppApi extends Api implements IAppApi{
@@ -17,7 +17,7 @@ export class AppApi extends Api implements IAppApi{
 
     //получаем с сервера информацию о списке товаров и картинках
     getProducts(): Promise<IProduct[]> {
-        return this.get('/product').then((data: ApiListResponse<IProduct>) =>
+        return this.get('/product').then((data: IApiProductList) =>
             data.items.map((item) => ({
                 ...item,
                 image: this.cdn + item.image
@@ -26,7 +26,13 @@ export class AppApi extends Api implements IAppApi{
     }
 
     //отправляем на сервер информацию о заказе
-    postOrderData(orderID: string, data: IOrder): Promise<IOrder> {
-        return this.post<IOrder>(`/order/${orderID}`, data, 'PUT').then((res: IOrder) => res)
-    }
+    postOrderData(data: IOrder): Promise<IOrder> {
+        return this
+          .post<IOrder>('/order', data, 'POST')
+          .then((res: IOrder) => res)
+          .catch((error: string) => {
+            console.error('Failed to set order info:', error);
+            throw new Error('Could not complete the order. Please try again.');
+          });
+      }
 }

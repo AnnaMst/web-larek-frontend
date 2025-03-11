@@ -9,7 +9,6 @@
 */
 
 import { createElement, ensureElement } from "../../utils/utils";
-import { Component } from "../base/component";
 import { EventEmitter } from "../base/events";
 
 export interface IBasket {
@@ -20,7 +19,6 @@ export interface IBasket {
 
 export class Basket {
     protected _list: HTMLElement;
-    protected _total: HTMLElement;
     protected _button: HTMLButtonElement;
     protected _items: string[];
     protected total: number;    
@@ -32,21 +30,16 @@ export class Basket {
     constructor(container: HTMLTemplateElement, events: EventEmitter) {
         this.container = container
         this._list = ensureElement<HTMLElement>('.basket__list', this.container);
-        this._total = this.container.querySelector('.basket__total');
         this._button = this.container.querySelector('.basket__button');
         this.span = this.container.querySelector('.basket__price')
 
         if (this._button) {
             this._button.addEventListener('click', () => {
-                events.emit('basket:click');
+                events.emit('placeOrder:click', this._items);
             });
         }
 
         this._items = [];
-    }
-
-    set totalItems(total: number) {
-        this._total.textContent = total.toString();
     }
 
     setItems(items: HTMLElement[]) {
@@ -62,12 +55,16 @@ export class Basket {
         }
     }
 
-    addToCart(item: string) {
+    addToCart(item: string): void {
         this._items.push(item)
     }
 
-    removeFromCart(basketItem: string) {
+    removeFromCart(basketItem: string): void {
         this._items = this._items.filter(item => item !== basketItem)
+    }
+
+    emptyCart (): void {
+        this._items.length = 0;
     }
 
     showItems (): string[] {
@@ -78,7 +75,7 @@ export class Basket {
         return this._items.length
     }
 
-    render(cardData: HTMLElement[]) {
+    render(cardData: HTMLElement[]): HTMLTemplateElement {
         this.setItems(cardData)
         cardData.forEach((card, index) => {
             const indexElement = this.container.querySelector('.basket__item-index')
@@ -88,7 +85,7 @@ export class Basket {
         return this.container
     }
 
-    handleSum (orderData: number | null) {
+    handleSum (orderData: number | null): void {
         if (orderData === 0) {
             this.span.textContent = orderData.toString() + ' синапсов'
             this._button.setAttribute('disabled', '')

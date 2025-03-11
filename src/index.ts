@@ -5,13 +5,16 @@ import { AppApi } from './components/AppApi';
 import { API_URL, CDN_URL, settings } from './utils/constants';
 import { Card } from './components/visual/Card';
 import { cloneTemplate } from './utils/utils';
-//import { Form } from './components/visual/Form';
 import { OrderData } from './components/orderData';
 import { Modal } from './components/visual/Modal';
 import { Page } from './components/visual/Page';
 import { CardsContainer } from './components/visual/CardsContainer';
 import { Basket } from './components/visual/Basket';
 import { CardsModal } from './components/visual/CardModal';
+import { OrderForm } from './components/visual/OrderForm';
+import { ContactsForm } from './components/visual/ContactsForm';
+import { Form } from './components/visual/Form';
+import { Success } from './components/visual/Success';
 
 const events = new EventEmitter();
 
@@ -33,23 +36,14 @@ const modal = new Modal(document.querySelector('.modal'), events)
 //Корзина
 const basket = new Basket(document.querySelector('.basket'), events);
 
-//Кнопки
-const addToCartButton = document.querySelector('.card__button')
-
-//Формы
-//const success = new Form(document.querySelector('#success'), events);
-//const cardPreview = new Form(document.querySelector('.card-preview'), events);
-//const order = new OrderForm(document.querySelector('[name="order"]'), events);
-//const contacts = new Form(document.querySelector('[name="contacts"]'), events)
-
 //ТЕМПЛЕЙТЫ
 const cardTemplate: HTMLTemplateElement = document.querySelector('#card-catalog');
 const cardPreviewTemplate: HTMLTemplateElement = document.querySelector('#card-preview');
 const cardBasketTemplate: HTMLTemplateElement = document.querySelector('#card-basket')
 const basketTemplate: HTMLTemplateElement = document.querySelector('#basket');
-/*const orderTemplate: HTMLTemplateElement = document.querySelector('.order');
-const contactsTemplate: HTMLTemplateElement = document.querySelector('.contacts')
-*/
+const orderTemplate: HTMLTemplateElement = document.querySelector('#order');
+const contactsTemplate: HTMLTemplateElement = document.querySelector('#contacts')
+const successTemplate: HTMLTemplateElement = document.querySelector('#success')
 
 //смотрю события
 events.onAll((event) => {
@@ -75,7 +69,7 @@ events.on('initialData:loaded', () => {
         return cardInstant.render(card)
     })
     cardsContainer.render({catalog: cardArray})    
-})
+});
 
 //открытие модального окна с карточкой
 events.on('card:select', (data: {card: CardsModal}) => {
@@ -84,13 +78,14 @@ events.on('card:select', (data: {card: CardsModal}) => {
     const {card} = data
     const newCardItem = productData.getProductItem(card.id)
     const readyCard = cardInstant.render(newCardItem)
+
     //проверяем на то, есть ли эта карточка уже в корзине
     if (basket.showItems().includes(card.id)) {cardInstant.toggleButton()}
-    modal.open()
-    modal.setContent(readyCard);
-    modal.render(readyCard)
-})
 
+    modal.open();
+    modal.setContent(readyCard);
+    modal.render(readyCard);
+});
 
 //добавление карточки товара в корзину
 events.on('cardButton:click', (data: {card: CardsModal}) => {
@@ -104,14 +99,15 @@ events.on('cardButton:click', (data: {card: CardsModal}) => {
 events.on('basketItem:changed', () => {
     const productQuantaty = basket.countItems()
     page.setCounter(productQuantaty)
-})
+});
 
 //событие "открыть корзину"
 events.on('basket:open', ()=>{
     modal.open()
     events.emit('basket:changed')
-})
+});
 
+//событие "изменение данных в корзине"
 events.on('basket:changed', () => {
     //создаю массив карточек из данных id, которые лежат в корзине
     const cardList = basket.showItems().map((item) => {
@@ -122,7 +118,7 @@ events.on('basket:changed', () => {
     
     const basketInstant = new Basket(cloneTemplate(basketTemplate), events)
 
-    //создаю тмплейт карточек внутри темплейта корзины
+    //создаю темплейт карточек внутри темплейта корзины
     basketInstant.render(cardList)
 
     modal.setContent(basketInstant.render(cardList))
@@ -135,7 +131,9 @@ events.on('basket:changed', () => {
     const countTotal = orderData.countTotal(cardsMassive)    
     //передаю данные в соответствующее поле корзины
     basketInstant.handleSum(countTotal)
-})
+    //сохраняю данные в класс OrderData
+    orderData.setOrderItemsData(basket.showItems(), countTotal)
+});
 
 //событие "удалить карточку из корзины"
 events.on('basketItem:delete', (data: { card: Card }) => {
@@ -143,30 +141,82 @@ events.on('basketItem:delete', (data: { card: Card }) => {
     basket.removeFromCart(card.id)
     events.emit('basket:changed')
     events.emit('basketItem:changed')
+});
+
+//событие "оформить"
+events.on('placeOrder:click', () => {
+    //создание темплейта
+    const orderInfo = new OrderForm(cloneTemplate(orderTemplate), events)
+    modal.setContent(orderInfo.form)
+    modal.render(orderInfo.form)
+});
+
+//событие, обрабатывающее выбор метода оплаты
+events.on('paymentButton:click', (data: {button: HTMLButtonElement}) => {
+    const{button} = data
+    orderData.setPaymentData(button.name)
+});
+
+//сохранение данных оплаты
+events.on('payment:saved', (data: {payment: string}) => {
+    const {payment} = data;
+    const orderInfo = new OrderForm(cloneTemplate(orderTemplate), events)
+    modal.setContent(orderInfo.form)
+    modal.render(orderInfo.form)
+    orderInfo.togglePaymentButton(payment)
+});
+
+//сохранение значений данных адреса
+events.on('order:input', (data: { field: string, value: string }) => {
+    const {value} = data
+    orderData.setAddressData(value)
 })
 
+//открытие формы контактов
+events.on('order:click', () => {
+    //создание темплейта
+    const contactsInfo = new ContactsForm(cloneTemplate(contactsTemplate), events)
+    modal.setContent(contactsInfo.form)
+    modal.render(contactsInfo.render)
+})
 
-/*//создала новый темплейт с полями карточки
-    const cardInstant = new Card(cloneTemplate(cardBasketTemplate), events)
+//введение значений формы контактов
+events.on('contacts:input', (data: { field: string, value: string }) => {
+    const {value} = data
+    const{ field } = data
+    orderData.setUserData(field, value);
+    console.log(orderData.getOrderData())
+})
 
-    
-    const {card} = data
-    const newCardItem = productData.getProductItem(card.id)
-    console.log(cardInstant)
-    
-    //создали новый контент из данных карточки
-    const orderInfo = cardInstant.render(newCardItem);
+//открытие формы успеха
+events.on('order:success', () => {
+    const success = new Success(cloneTemplate(successTemplate), events)
+    modal.setContent(success.container)
+    modal.render(success.container)
+    success.putSuccessText(orderData.total)
+})
 
-    //создаём форму корзины
-    console.log(basket)
-    
-    //Рендерим корзину
-    modal.setContent(cardInstant.render(newCardItem))
-    modal.render({basket})
-*/
+//отправка заказа
+events.on('order:send', () => {
+    api
+        .postOrderData(orderData.getOrderData())
+        .then( ()  => {
+            events.emit('order:sent');
+            console.log('done')
+        })
+        .catch(err => {
+            console.error(err);
+        });
+})
 
+//обработка события отправки формы
+events.on('order:sent', () => {
+    basket.emptyCart()
+    events.emit('basketItem:changed');
+    modal.close()
+})
 
-
+//блокируем окно
 events.on('modal:open', () => {
     page.locked = true;
 });

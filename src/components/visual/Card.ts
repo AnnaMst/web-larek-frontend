@@ -1,5 +1,4 @@
 import { IProduct } from "../../types";
-import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 
@@ -8,7 +7,7 @@ export class Card extends Component <IProduct> {
     protected cardTitle: HTMLElement;
     protected cardCategory: HTMLElement;
     protected cardImage: HTMLImageElement;
-    protected cardDescreption: HTMLElement;
+    protected cardDescription: HTMLElement;
     protected cardPrice: HTMLElement;
     protected cardId: string;
     protected _cardDeleteButton: HTMLButtonElement;
@@ -24,7 +23,7 @@ export class Card extends Component <IProduct> {
         this.cardCategory = this.container.querySelector('.card__category');
         
         this.cardImage = this.container.querySelector('.card__image');
-        this.cardDescreption = this.container.querySelector('.card__text');
+        this.cardDescription = this.container.querySelector('.card__text');
 
         this._cardDeleteButton = this.container.querySelector('.basket__item-delete')
 
@@ -39,6 +38,12 @@ export class Card extends Component <IProduct> {
         this.container.addEventListener('click', () => {
             this.events.emit('card:select', { card: this });
         });
+    }
+    
+    render(cardData?: Partial<IProduct> | undefined) {
+        if (!cardData) return this.container;
+        const {...otherCardData} = cardData;
+        return super.render(otherCardData)
     }
 
     set _id(id: string) {
@@ -55,39 +60,43 @@ export class Card extends Component <IProduct> {
             ;
     }
 
+    set description (description: string) {
+        if (this.cardDescription) {
+            this.cardDescription.textContent = description;
+        } else {
+            console.log('no-description')
+        }
+    }
+
     set category (category: string) {
         if (this.cardCategory) {
             this.cardCategory.textContent = category
+            if (this.cardCategory.textContent ==='софт-скил') {this.cardCategory.classList.add(`card__category_soft`)}
+            if (this.cardCategory.textContent ==='другое') {this.cardCategory.classList.add(`card__category_other`)}
+            if (this.cardCategory.textContent ==='хард-скил') {this.cardCategory.classList.add(`card__category_hard`)}
+            if (this.cardCategory.textContent ==='дополнительное') {this.cardCategory.classList.add(`card__category_additional`)}
+            if (this.cardCategory.textContent ==='кнопка') {this.cardCategory.classList.add(`card__category_button`)}
+            
+        } else {
+            console.log('no-category')
         }
     }
 
     set title(title: string) {
         this.cardTitle.textContent = title
+        
     }
 
     set image(image: string) {
-        if (this.image) {
+        if (this.cardImage) {
             this.cardImage.src = image
+        } else {
+            console.log('no-image')
         }
     }
 
-    set descreption(descreption: string) {
-        if(this.cardDescreption) {
-            this.cardDescreption.textContent = descreption
-        }
-    }
-
-    get _id() {
+    get _id():string {
         return this.cardId
     }
-
-    deleteCard() {
-		this.container.remove();
-		this.container = null;
-	}
-
-    render(cardData: Partial<IProduct>) {
-        const {...otherCardData} = cardData;
-        return super.render(otherCardData)
-    }
+    
 }
