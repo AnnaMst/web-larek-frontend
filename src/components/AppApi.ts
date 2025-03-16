@@ -33,6 +33,6 @@ export class AppApi extends Api implements IAppApi{
           .catch((error: string) => {
             console.error('Failed to set order info:', error);
             throw new Error('Could not complete the order. Please try again.');
-          });
+        });
       }
 }

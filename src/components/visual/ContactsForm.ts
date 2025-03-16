@@ -13,35 +13,36 @@ export class ContactsForm extends Form {
 
         this.submitButton.addEventListener('click', (evt) =>{
             evt.preventDefault()
-            this._events.emit('order:success')
+            this._events.emit('order:sent')
         })
+
+        this.inputs.forEach((input) => {
+            input.addEventListener('input', () => {
+              this.inputValues = this.getInputValues();
+              this.updateValidity();
+            });
+        });
     }
 
     updateValidity() {
-        let isEmailValid = true;
-        let isPhoneValid = true;
-        let errorMassage ='';
-        console.log(this.inputs)
+        //let isEmailValid = true;
+        //let isPhoneValid = true;
+        let allInputsValid = true;
+        let errorMassage = '';
 
-        Array.from(this.inputs).forEach((input) => {
+        this.inputs.forEach((input) => {
             if (this.validateInput(input.value) === false && input.name === 'email') {
                 errorMassage = 'Введите адрес электронной почты';
                 this.showInputError(errorMassage);
-                isEmailValid = false;
-            } else {
-                this.hideInputError()            
-            }
-            
-            if (this.validateInput(input.value) === false && input.name === 'phone') {
+                allInputsValid = false;
+            } else if (this.validateInput(input.value) === false && input.name === 'phone') {
                 errorMassage = 'Введите контактный номер телефона';
                 this.showInputError(errorMassage);
-                isPhoneValid = false
-            } else {
-                this.hideInputError()            
+                allInputsValid = false
             }
         })
 
-        this.initValidation(isEmailValid && isPhoneValid)
+        this.initValidation(allInputsValid)
         this._error = errorMassage
     }
 }

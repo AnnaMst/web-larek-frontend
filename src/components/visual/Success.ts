@@ -11,7 +11,7 @@ export class Success {
             this.orderSum = this.container.querySelector('.order-success__description')
 
             this.button.addEventListener('click', () => {
-                events.emit('order:send');
+                events.emit('success:close');
             });
     }
 

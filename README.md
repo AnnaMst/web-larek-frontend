@@ -135,7 +135,6 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - email: string; - имейл пользователя
 - phone: string; - номер телефона пользователя
 - address: string; - адрес, введённый пользователем
-- total: number; - стоимость корзины
 - items: []; - массив id выбранных товаров
 
 Также класс предоставляет метод для работы с этими данными:
@@ -153,6 +152,11 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - setUserData(field: string, value: string): void - сохраняет данные пользователя
 - getUserData(): { email: string; phone: string; address: string, payment: string } - получает данные пользователя из корзины
 - deleteItems (): метод очищения данных о заказе
+- addToCart(item: string): void - добавляет айди товаров в список товаров корзины
+- removeFromCart(basketItem: string): void - метод для удаления товара из корзины
+- emptyCart (): void - очищает товары в корзине
+- showItems (): string[] - выводит список товаров в корзине
+- countItems(): number - выводит количество товаров в корзине
 
 ### Слой представления
 Отвечает за отображения в контейнере (DOM элементе)
@@ -303,19 +307,11 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 Поля класса:
 - _list: HTMLElement; - элемент списка товаров в корзине
 - _button: HTMLButtonElement; - кнопка корзины
-- _items: string[]; - массив айди товаров в корзине
-- total: number; - сумма товаров в корзине 
 - cardList: HTMLElement[] - список элементов товара в корзине
 - container: HTMLTemplateElement - контейнер корзины
 - span: HTMLElement; - элемент текста суммы всех товаров в корзине
 
 Методы класса:
-- setItems(items: HTMLElement[]) - устанавливает данные товаров, содержащихся в корзине
-- addToCart(item: string): void - добавляет айди товаров в список товаров корзины
-- removeFromCart(basketItem: string): void - метод для удаления товара из корзины
-- emptyCart (): void - очищает товары в корзине
-- showItems (): string[] - выводит список товаров в корзине
-- countItems(): number - выводит количество товаров в корзине
 - render(cardData: HTMLElement[]): HTMLTemplateElement - рендерит корзину
 - handleSum (orderData: number | null): void - выводит значение суммы корзины
 
@@ -365,5 +361,6 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - 'order:success' - открытие формы успеха
 - 'order:send' - отправка заказа
 - 'order:sent' - обработка события отправки формы
+- 'modal:close' - закрытие модального окна
 - 'modal:open' - блокировка окна
 - 'modal:close' - разблокировка окна

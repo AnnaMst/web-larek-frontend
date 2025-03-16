@@ -6,13 +6,17 @@ export class OrderData implements IOrder {
     email: string;
     phone: string;
     address: string;
-    total: number;
-    items: string[];
+    _items: IProduct[];
     _events: IEvents;
 
     constructor(events: IEvents){
         this._events = events;
-        this.items = []
+        this._items = []
+    }
+
+    getIds (): string[] {
+        const products = this._items.map(products => products.id)
+        return products
     }
 
     getOrderData() {
@@ -21,65 +25,74 @@ export class OrderData implements IOrder {
             email:this.email,
             phone: this.phone,
             address: this.address,
-            total: this.total,
-            items: this.items
+            total: this.countTotal(),
+            items: this.getIds()
         }
     }
 
     // Метод получения списка товаров в корзине
-    getProductsInfo(): string[] {
-        return this.items
+    getProductsInfo(): IProduct[] {
+        return this._items
     }
 
     // Метод добавления товара в корзину
-    public addProductToCart(itemID: string): void {
-        this.items.push(itemID);
+    public addProductToCart(item: IProduct): void {
+        this._items.push(item);
         this.itemsCount();
     }
 
     // Метод проверки наличия товара в корзине
-    isProductInCart(id: string): boolean {
-        return this.items.includes(id) ? false : true
-    }
-
-    // Метод удаления товара из корзины
-    public deleteProduct(order: IOrder, itemId: string): IOrder {
-        const index = order.items.indexOf(itemId);
-        if (index !== -1) {
-            // Удаляем элемент по найденному индексу
-            order.items.splice(index, 1);
-        }
-        return order
+    isProductInCart(itemId: string): boolean {
+        return this._items.map((item) => {item.id.includes(itemId)}) ? false : true
+         
     }
 
     // Метод подсчета общей суммы корзины
-    public countTotal(productMassive: IProduct[]): number {
-        let total = productMassive.reduce((accumulator, currentProduct) => {
+    public countTotal(): number {
+        let total = this._items.reduce((accumulator, currentProduct) => {
             return accumulator + currentProduct.price;
         }, 0) || null
 
         return total
     }
 
-    // Метод получения общей суммы корзины
-    public getTotal(): number {
-        return this.total;
-    }
-
     // Метод подсчёта количества товара в корзине
     public itemsCount(): number {
-        return this.items.length
+        return this._items.length
     }
 
-    setOrderItemsData(items: string[], total: number): void {
-        this.items = items;
-        this.total = total
+    setOrderItemsData(items: IProduct[]): void {
+        this._items = items;
+    }
+
+    addToCart(item: IProduct): void {
+        this._items.push(item)
+    }
+
+    removeFromCart(basketItem: IProduct): void {
+        this._items = this._items.filter(item => item !== basketItem)
+        this._events.emit('basketItem:changed')
+        this._events.emit('basket:changed')
+    }
+
+    emptyCart (): void {
+        this._items.length = 0;
+        this._events.emit('basketItem:changed');
+    }
+
+    showItems (): IProduct[] {
+        return this._items
+    }
+
+    countItems(): number {
+        return this._items.length
     }
 
     setPaymentData(payment: string): void {
         this.payment = payment
         this._events.emit('payment:saved', {payment: this.payment})
     }
+    
     setAddressData(address: string): void {
         this.address = address
         this._events.emit('address:saved')
@@ -111,7 +124,10 @@ export class OrderData implements IOrder {
         this.email = '';
         this.phone = '';
         this.address = '';
-        this.total = 0;
-        this.items = undefined;
+        this._items = undefined;
+    }
+
+    updateValidity(inputValue: string): boolean {
+        return inputValue.length === 0 ? true : false
     }
 }

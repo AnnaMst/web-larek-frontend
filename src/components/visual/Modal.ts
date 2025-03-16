@@ -40,11 +40,11 @@ export class Modal <T> extends Component<T> {
 
     open() {
         this.container.classList.add('modal_active');
-        this.events.emit('modal:open')
+        this.events.emit('page:locked')
     }
 
     close() {
         this.container.classList.remove('modal_active');
-        this.events.emit('modal:close');
+        this.events.emit('page:unlocked');
     }
 }

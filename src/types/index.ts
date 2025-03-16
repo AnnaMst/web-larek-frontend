@@ -1,5 +1,3 @@
-import { IEvents } from "../components/base/events";
-
 export interface IApiProductList {
     total?: number;
     items: IProduct[]
@@ -19,8 +17,7 @@ export interface IOrder {
     email: string;
     phone: string;
     address: string;
-    total: number;
-    items: string[];
+    items?: string[];
 }
 
 export type TOrderInfo = Pick<IOrder, 'payment' | 'address'>;

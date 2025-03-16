@@ -62,7 +62,7 @@ export class OrderForm extends Form {
     }
     
 
-    updateValidity(): void {
+    updateValidity (): void {
         let isButtonValid = true;
         let isInputValid = true
 
@@ -82,7 +82,7 @@ export class OrderForm extends Form {
         )
         
         if(!activeButton) {
-            this.showInputError('Сначала выберите способ оплаты');
+            this.showInputError('Выберите способ оплаты');
             isButtonValid = false;
         }
 

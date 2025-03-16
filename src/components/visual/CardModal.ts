@@ -21,10 +21,16 @@ export class CardsModal extends Card {
         if (!this.cardButton.hasAttribute('disabled')) {
             this.cardButton.setAttribute('disabled', '')
             this.cardButton.textContent = 'Товар уже в корзине'
+            this.events.emit('basketItem:changed');
         } else {
             this.cardButton.removeAttribute('disabled');
             this.cardButton.textContent = 'Купить'
         }
+    }
+
+    blockButton(): void {
+        this.cardButton.setAttribute('disabled', '')
+        this.cardButton.textContent = 'Этот товар бесценен'
     }
     
 }

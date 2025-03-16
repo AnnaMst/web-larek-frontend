@@ -34,6 +34,7 @@ export abstract class Form extends Component<IForm>{
             this._events.emit(`${this.formName}:input`, { field, value })
             this.updateValidity()
         })
+
     }
 
     protected abstract updateValidity (): void
@@ -59,9 +60,12 @@ export abstract class Form extends Component<IForm>{
 
     //Валидация кнопки
     initValidation(isValid: boolean) {
-        isValid === true 
-            ? this.submitButton.removeAttribute('disabled') 
-            : this.submitButton.getAttribute('disabled')
+        if (isValid === true) {
+            this.submitButton.removeAttribute('disabled') 
+            this.hideInputError()
+        } else {
+            this.submitButton.getAttribute('disabled')
+        }
     }
 
     get form(): HTMLTemplateElement {

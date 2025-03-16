@@ -8,12 +8,10 @@ import { cloneTemplate } from './utils/utils';
 import { OrderData } from './components/orderData';
 import { Modal } from './components/visual/Modal';
 import { Page } from './components/visual/Page';
-import { CardsContainer } from './components/visual/CardsContainer';
 import { Basket } from './components/visual/Basket';
 import { CardsModal } from './components/visual/CardModal';
 import { OrderForm } from './components/visual/OrderForm';
 import { ContactsForm } from './components/visual/ContactsForm';
-import { Form } from './components/visual/Form';
 import { Success } from './components/visual/Success';
 
 const events = new EventEmitter();
@@ -28,13 +26,9 @@ const orderData = new OrderData(events)
 //СЛОЙ ПРЕДСТАВЛЕНИЯ
 //Главная страница
 const page = new Page(document.body, events);
-const cardsContainer = new CardsContainer(document.querySelector('.gallery'))
 
 //Модальное окно
 const modal = new Modal(document.querySelector('.modal'), events)
-
-//Корзина
-const basket = new Basket(document.querySelector('.basket'), events);
 
 //ТЕМПЛЕЙТЫ
 const cardTemplate: HTMLTemplateElement = document.querySelector('#card-catalog');
@@ -44,6 +38,14 @@ const basketTemplate: HTMLTemplateElement = document.querySelector('#basket');
 const orderTemplate: HTMLTemplateElement = document.querySelector('#order');
 const contactsTemplate: HTMLTemplateElement = document.querySelector('#contacts')
 const successTemplate: HTMLTemplateElement = document.querySelector('#success')
+
+const basketInstant = new Basket(cloneTemplate(basketTemplate), events)
+const cardInstantBasket = new Card(cloneTemplate(cardBasketTemplate), events)
+const orderInfo = new OrderForm(cloneTemplate(orderTemplate), events)
+const contactsInfo = new ContactsForm(cloneTemplate(contactsTemplate), events)
+const success = new Success(cloneTemplate(successTemplate), events)
+
+
 
 //смотрю события
 events.onAll((event) => {
@@ -62,13 +64,14 @@ api.getProducts()
 
 //вывод карточек на экран
 events.on('initialData:loaded', () => {
+    
     const cardArray = productData.products.map((card) => {
         const cardInstant = new Card(cloneTemplate(cardTemplate), events);
         cardInstant.handleCardOpen()
 
         return cardInstant.render(card)
     })
-    cardsContainer.render({catalog: cardArray})    
+    page.setCatalog(cardArray)    
 });
 
 //открытие модального окна с карточкой
@@ -80,76 +83,85 @@ events.on('card:select', (data: {card: CardsModal}) => {
     const readyCard = cardInstant.render(newCardItem)
 
     //проверяем на то, есть ли эта карточка уже в корзине
-    if (basket.showItems().includes(card.id)) {cardInstant.toggleButton()}
+    const productList = orderData.showItems();
+    const productIds = productList.map(products => products.id)
+    if (productIds.includes(card.id)) {cardInstant.toggleButton()}
+    else {console.log('no product')}
 
-    modal.open();
+    //проверяем цену карточки, переключаем кнопку добавления карточки в корзину
+    if (productData.getProductItem(card.id).price === null) {cardInstant.blockButton();}
+    else {console.log('success')}
+
     modal.setContent(readyCard);
-    modal.render(readyCard);
+    modal.open();
+
 });
 
 //добавление карточки товара в корзину
 events.on('cardButton:click', (data: {card: CardsModal}) => {
     const {card} = data
-    basket.addToCart(card.id)
+    orderData.addToCart(productData.getProductItem(card.id))
     card.toggleButton()
-    events.emit('basketItem:changed');
 })
 
 //событие "товар добавлен"
 events.on('basketItem:changed', () => {
-    const productQuantaty = basket.countItems()
+    const productQuantaty = orderData.countItems()
     page.setCounter(productQuantaty)
 });
 
 //событие "открыть корзину"
 events.on('basket:open', ()=>{
-    modal.open()
-    events.emit('basket:changed')
-});
 
-//событие "изменение данных в корзине"
-events.on('basket:changed', () => {
-    //создаю массив карточек из данных id, которые лежат в корзине
-    const cardList = basket.showItems().map((item) => {
-        const productItem = productData.getProductItem(item)
-        const cardInstant = new Card(cloneTemplate(cardBasketTemplate), events)
-        return cardInstant.render(productItem)
+    //создаю массив карточек из товаров, которые лежат в корзине
+    const cardList = orderData.showItems().map((item) => {
+        const productItem = productData.getProductItem(item.id)
+        return cardInstantBasket.render(productItem)
     })
-    
-    const basketInstant = new Basket(cloneTemplate(basketTemplate), events)
 
-    //создаю темплейт карточек внутри темплейта корзины
-    basketInstant.render(cardList)
-
-    modal.setContent(basketInstant.render(cardList))
-    modal.render(basketInstant.render(cardList))
-
-    //создаю массив товаров, чтобы посчитать сумму товаров
-    const cardsMassive = basket.showItems().map((item) => {
-        return productData.getProductItem(item)
-    })
-    const countTotal = orderData.countTotal(cardsMassive)    
+    //считаю сумму корзины
+    const countTotal = orderData.countTotal()    
     //передаю данные в соответствующее поле корзины
     basketInstant.handleSum(countTotal)
-    //сохраняю данные в класс OrderData
-    orderData.setOrderItemsData(basket.showItems(), countTotal)
+
+    //создаю темплейт карточек внутри темплейта корзины
+    basketInstant.setItems(cardList)
+
+    modal.setContent(basketInstant.render()) 
+    modal.open()   
 });
 
 //событие "удалить карточку из корзины"
 events.on('basketItem:delete', (data: { card: Card }) => {
     const {card} = data
-    basket.removeFromCart(card.id)
-    events.emit('basket:changed')
-    events.emit('basketItem:changed')
+    const cardToDelete = productData.getProductItem(card.id)
+    orderData.removeFromCart(cardToDelete)
 });
+
+//событие "изменение данных в корзине"
+events.on('basket:changed', () => {
+   //создаю массив карточек из товаров, которые лежат в корзине
+    const cardList = orderData.showItems().map((item) => {
+        const productItem = productData.getProductItem(item.id)
+        return cardInstantBasket.render(productItem)
+    })
+
+    //считаю сумму корзины
+    const countTotal = orderData.countTotal()    
+    //передаю данные в соответствующее поле корзины
+    basketInstant.handleSum(countTotal)
+
+    //создаю темплейт карточек внутри темплейта корзины
+    basketInstant.setItems(cardList)
+    basketInstant.render()
+})
 
 //событие "оформить"
 events.on('placeOrder:click', () => {
-    //создание темплейта
-    const orderInfo = new OrderForm(cloneTemplate(orderTemplate), events)
     modal.setContent(orderInfo.form)
-    modal.render(orderInfo.form)
+    modal.open()
 });
+
 
 //событие, обрабатывающее выбор метода оплаты
 events.on('paymentButton:click', (data: {button: HTMLButtonElement}) => {
@@ -160,7 +172,6 @@ events.on('paymentButton:click', (data: {button: HTMLButtonElement}) => {
 //сохранение данных оплаты
 events.on('payment:saved', (data: {payment: string}) => {
     const {payment} = data;
-    const orderInfo = new OrderForm(cloneTemplate(orderTemplate), events)
     modal.setContent(orderInfo.form)
     modal.render(orderInfo.form)
     orderInfo.togglePaymentButton(payment)
@@ -172,10 +183,15 @@ events.on('order:input', (data: { field: string, value: string }) => {
     orderData.setAddressData(value)
 })
 
+events.on('email:input', (data: { field: string, value: string }) => {
+    const {value} = data
+    orderInfo.initValidation(orderData.updateValidity(value))
+    
+})
+
 //открытие формы контактов
 events.on('order:click', () => {
     //создание темплейта
-    const contactsInfo = new ContactsForm(cloneTemplate(contactsTemplate), events)
     modal.setContent(contactsInfo.form)
     modal.render(contactsInfo.render)
 })
@@ -190,19 +206,19 @@ events.on('contacts:input', (data: { field: string, value: string }) => {
 
 //открытие формы успеха
 events.on('order:success', () => {
-    const success = new Success(cloneTemplate(successTemplate), events)
     modal.setContent(success.container)
     modal.render(success.container)
-    success.putSuccessText(orderData.total)
+    success.putSuccessText(orderData.countTotal())
 })
 
 //отправка заказа
 events.on('order:send', () => {
     api
         .postOrderData(orderData.getOrderData())
-        .then( ()  => {
-            events.emit('order:sent');
-            console.log('done')
+        .then( (data)  => {
+            console.log(data)
+            events.emit('order:success')
+            events.emit('order:sent')
         })
         .catch(err => {
             console.error(err);
@@ -211,17 +227,20 @@ events.on('order:send', () => {
 
 //обработка события отправки формы
 events.on('order:sent', () => {
-    basket.emptyCart()
-    events.emit('basketItem:changed');
+    orderData.emptyCart()
+})
+
+//закрытие модального окна
+events.on('modal:close', ()=>{
     modal.close()
 })
 
 //блокируем окно
-events.on('modal:open', () => {
+events.on('page:locked', () => {
     page.locked = true;
 });
 
 // ... и разблокируем
-events.on('modal:close', () => {
+events.on('page:unlocked', () => {
     page.locked = false;
 });
