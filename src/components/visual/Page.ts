@@ -25,7 +25,8 @@ export class Page extends Component<IPage> {
         this._catalog = ensureElement<HTMLElement>('.gallery')
 
         this._basket.addEventListener('click', () => {
-            this.events.emit('basket:open', this);
+            this.events.emit('basket:changed');
+            this.events.emit('basket:open');
         });
     }
 

@@ -4,7 +4,7 @@ import { Card } from "./Card";
 export class CardsModal extends Card {
     protected cardButton: HTMLButtonElement
     protected events: IEvents;
-    protected cardContainer: HTMLElement
+    protected cardContainer: HTMLElement;
 
     constructor(protected container: HTMLTemplateElement, events: IEvents) { 
         super(container, events)

@@ -11,6 +11,7 @@ export class Card extends Component <IProduct> {
     protected cardPrice: HTMLElement;
     protected cardId: string;
     protected _cardDeleteButton: HTMLButtonElement;
+    protected index: HTMLElement
 
     constructor(protected container: HTMLTemplateElement, events: IEvents) {
         super(container)
@@ -26,6 +27,8 @@ export class Card extends Component <IProduct> {
         this.cardDescription = this.container.querySelector('.card__text');
 
         this._cardDeleteButton = this.container.querySelector('.basket__item-delete')
+
+        this.index = this.container.querySelector('.basket__item-index')
 
         if(this._cardDeleteButton) {
             this._cardDeleteButton.addEventListener('click', () =>
@@ -46,11 +49,11 @@ export class Card extends Component <IProduct> {
         return super.render(otherCardData)
     }
 
-    set _id(id: string) {
+    set _id (id: string) {
         this.cardId = id;
     }
 
-    set price(cardPrice: number) {
+    set price (cardPrice: number) {
         cardPrice === null ? 
             this.cardPrice.textContent = 'Бесценно' : 
             this.cardPrice.textContent = 
@@ -84,7 +87,6 @@ export class Card extends Component <IProduct> {
 
     set title(title: string) {
         this.cardTitle.textContent = title
-        
     }
 
     set image(image: string) {
@@ -93,6 +95,10 @@ export class Card extends Component <IProduct> {
         } else {
             console.log('no-image')
         }
+    }
+
+    set _index (index: number) {
+        this.index.textContent = index.toString()
     }
 
     get _id():string {

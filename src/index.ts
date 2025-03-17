@@ -40,7 +40,6 @@ const contactsTemplate: HTMLTemplateElement = document.querySelector('#contacts'
 const successTemplate: HTMLTemplateElement = document.querySelector('#success')
 
 const basketInstant = new Basket(cloneTemplate(basketTemplate), events)
-const cardInstantBasket = new Card(cloneTemplate(cardBasketTemplate), events)
 const orderInfo = new OrderForm(cloneTemplate(orderTemplate), events)
 const contactsInfo = new ContactsForm(cloneTemplate(contactsTemplate), events)
 const success = new Success(cloneTemplate(successTemplate), events)
@@ -112,23 +111,8 @@ events.on('basketItem:changed', () => {
 
 //событие "открыть корзину"
 events.on('basket:open', ()=>{
-
-    //создаю массив карточек из товаров, которые лежат в корзине
-    const cardList = orderData.showItems().map((item) => {
-        const productItem = productData.getProductItem(item.id)
-        return cardInstantBasket.render(productItem)
-    })
-
-    //считаю сумму корзины
-    const countTotal = orderData.countTotal()    
-    //передаю данные в соответствующее поле корзины
-    basketInstant.handleSum(countTotal)
-
-    //создаю темплейт карточек внутри темплейта корзины
-    basketInstant.setItems(cardList)
-
-    modal.setContent(basketInstant.render()) 
-    modal.open()   
+    modal.setContent(basketInstant.render())
+    modal.open()
 });
 
 //событие "удалить карточку из корзины"
@@ -141,19 +125,21 @@ events.on('basketItem:delete', (data: { card: Card }) => {
 //событие "изменение данных в корзине"
 events.on('basket:changed', () => {
    //создаю массив карточек из товаров, которые лежат в корзине
-    const cardList = orderData.showItems().map((item) => {
+    const cardList = orderData.showItems().map((item, index) => {
         const productItem = productData.getProductItem(item.id)
+        const cardInstantBasket = new Card(cloneTemplate(cardBasketTemplate), events)
+        cardInstantBasket._index = index + 1
         return cardInstantBasket.render(productItem)
     })
 
     //считаю сумму корзины
     const countTotal = orderData.countTotal()    
+
     //передаю данные в соответствующее поле корзины
     basketInstant.handleSum(countTotal)
 
     //создаю темплейт карточек внутри темплейта корзины
     basketInstant.setItems(cardList)
-    basketInstant.render()
 })
 
 //событие "оформить"
@@ -186,7 +172,7 @@ events.on('order:input', (data: { field: string, value: string }) => {
 events.on('email:input', (data: { field: string, value: string }) => {
     const {value} = data
     orderInfo.initValidation(orderData.updateValidity(value))
-    
+
 })
 
 //открытие формы контактов
