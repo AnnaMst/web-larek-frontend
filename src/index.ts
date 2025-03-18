@@ -103,12 +103,6 @@ events.on('cardButton:click', (data: {card: CardsModal}) => {
     card.toggleButton()
 })
 
-//событие "товар добавлен"
-events.on('basketItem:changed', () => {
-    const productQuantaty = orderData.countItems()
-    page.setCounter(productQuantaty)
-});
-
 //событие "открыть корзину"
 events.on('basket:open', ()=>{
     modal.setContent(basketInstant.render())
@@ -140,6 +134,10 @@ events.on('basket:changed', () => {
 
     //создаю темплейт карточек внутри темплейта корзины
     basketInstant.setItems(cardList)
+
+    //обновлен счётчик товаров в корзине
+    const productQuantaty = orderData.countItems()
+    page.setCounter(productQuantaty)
 })
 
 //событие "оформить"

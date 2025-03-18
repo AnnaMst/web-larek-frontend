@@ -26,6 +26,8 @@ export class Basket  extends Component <IBasket> {
         this._button = this.container.querySelector('.basket__button');
         this.basketPrice = this.container.querySelector('.basket__price')
 
+        this.setItems([])
+
         if (this._button) {
             this._button.addEventListener('click', () => {
                 events.emit('placeOrder:click');
@@ -36,7 +38,7 @@ export class Basket  extends Component <IBasket> {
 
     setItems(items?: HTMLElement[]) {
         if (items.length) {
-            this._list.append(...items)
+            this._list.replaceChildren(...items)
         } else {
             this._list.replaceChildren(
                 createElement<HTMLParagraphElement>('p', {

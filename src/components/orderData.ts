@@ -44,7 +44,6 @@ export class OrderData implements IOrder {
     // Метод проверки наличия товара в корзине
     isProductInCart(itemId: string): boolean {
         return this._items.map((item) => {item.id.includes(itemId)}) ? false : true
-         
     }
 
     // Метод подсчета общей суммы корзины
@@ -67,17 +66,17 @@ export class OrderData implements IOrder {
 
     addToCart(item: IProduct): void {
         this._items.push(item)
+        this._events.emit('basket:changed');
     }
 
     removeFromCart(basketItem: IProduct): void {
         this._items = this._items.filter(item => item !== basketItem)
-        this._events.emit('basketItem:changed')
         this._events.emit('basket:changed')
     }
 
     emptyCart (): void {
         this._items.length = 0;
-        this._events.emit('basketItem:changed');
+        this._events.emit('basket:changed')
     }
 
     showItems (): IProduct[] {
