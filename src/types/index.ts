@@ -18,6 +18,7 @@ export interface IOrder {
     phone: string;
     address: string;
     items?: string[];
+    total?: number;
 }
 
 export type TOrderInfo = Pick<IOrder, 'payment' | 'address'>;

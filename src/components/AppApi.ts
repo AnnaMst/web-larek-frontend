@@ -1,4 +1,4 @@
-import { IApi, IProduct, IOrder, IApiProductList } from "../types";
+import { IProduct, IOrder, IApiProductList } from "../types";
 import { Api } from "./base/api";
 
 interface IAppApi {

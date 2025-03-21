@@ -12,6 +12,10 @@ export class OrderData implements IOrder {
     constructor(events: IEvents){
         this._events = events;
         this._items = []
+        this.payment = '';
+        this.email = '';
+        this.phone = '';
+        this.address = '';
     }
 
     getIds (): string[] {
@@ -126,7 +130,19 @@ export class OrderData implements IOrder {
         this._items = undefined;
     }
 
-    updateValidity(inputValue: string): boolean {
-        return inputValue.length === 0 ? true : false
+    checkContactsValidation (): boolean {
+        if (this.phone.trim().length > 0 && this.email.trim().length > 0 ) {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    checkOrderValidation (): boolean {
+        if (this.payment.trim().length > 0 && this.address.trim().length > 0 ) {
+            return true
+        } else {
+            return false
+        }
     }
 }

@@ -55,22 +55,16 @@ events.onAll((event) => {
 api.getProducts()
 .then((productInfo) => {
     productData.products = productInfo
-    events.emit('initialData:loaded')
-})
-.catch((err) => {
-    console.error(err);
-});
-
-//вывод карточек на экран
-events.on('initialData:loaded', () => {
-    
     const cardArray = productData.products.map((card) => {
         const cardInstant = new Card(cloneTemplate(cardTemplate), events);
         cardInstant.handleCardOpen()
 
         return cardInstant.render(card)
     })
-    page.setCatalog(cardArray)    
+    page.setCatalog(cardArray)
+})
+.catch((err) => {
+    console.error(err);
 });
 
 //открытие модального окна с карточкой
@@ -126,24 +120,22 @@ events.on('basket:changed', () => {
         return cardInstantBasket.render(productItem)
     })
 
-    //считаю сумму корзины
-    const countTotal = orderData.countTotal()    
-
-    //передаю данные в соответствующее поле корзины
-    basketInstant.handleSum(countTotal)
-
     //создаю темплейт карточек внутри темплейта корзины
     basketInstant.setItems(cardList)
+
+    //считаю сумму корзины
+    basketInstant.handleSum(orderData.countTotal())
 
     //обновлен счётчик товаров в корзине
     const productQuantaty = orderData.countItems()
     page.setCounter(productQuantaty)
 })
 
-//событие "оформить"
+//событие открытие формы ввода адреса и оплаты
 events.on('placeOrder:click', () => {
-    modal.setContent(orderInfo.form)
+    modal.setContent(orderInfo.render())
     modal.open()
+    orderInfo.setErrors('Выберите способ оплаты и введите адрес', orderData.checkOrderValidation())
 });
 
 
@@ -159,18 +151,15 @@ events.on('payment:saved', (data: {payment: string}) => {
     modal.setContent(orderInfo.form)
     modal.render(orderInfo.form)
     orderInfo.togglePaymentButton(payment)
+    orderInfo.initButtonValidation(orderData.checkOrderValidation())
+    orderInfo.setErrors('Заполните, пожалуйста, адрес', orderData.checkOrderValidation())    
 });
 
 //сохранение значений данных адреса
-events.on('order:input', (data: { field: string, value: string }) => {
+events.on('address:input', (data: { field: string, value: string }) => {
     const {value} = data
     orderData.setAddressData(value)
-})
-
-events.on('email:input', (data: { field: string, value: string }) => {
-    const {value} = data
-    orderInfo.initValidation(orderData.updateValidity(value))
-
+    orderInfo.initButtonValidation(orderData.checkOrderValidation())
 })
 
 //открытие формы контактов
@@ -178,21 +167,25 @@ events.on('order:click', () => {
     //создание темплейта
     modal.setContent(contactsInfo.form)
     modal.render(contactsInfo.render)
+    contactsInfo.setErrors('Введите адрес электронной почты и номер телефона', orderData.checkContactsValidation())
 })
 
-//введение значений формы контактов
-events.on('contacts:input', (data: { field: string, value: string }) => {
+//заполнение инпута имейла
+events.on('email:input', (data: { field: string, value: string }) => {
     const {value} = data
     const{ field } = data
     orderData.setUserData(field, value);
-    console.log(orderData.getOrderData())
+    contactsInfo.initButtonValidation(orderData.checkContactsValidation()) 
+    
 })
 
-//открытие формы успеха
-events.on('order:success', () => {
-    modal.setContent(success.container)
-    modal.render(success.container)
-    success.putSuccessText(orderData.countTotal())
+//заполнение инпута телефона
+events.on('phone:input', (data: { field: string, value: string }) => {
+    const {value} = data
+    const{ field } = data
+    orderData.setUserData(field, value);
+    contactsInfo.initButtonValidation(orderData.checkContactsValidation()) 
+    
 })
 
 //отправка заказа
@@ -200,18 +193,14 @@ events.on('order:send', () => {
     api
         .postOrderData(orderData.getOrderData())
         .then( (data)  => {
-            console.log(data)
-            events.emit('order:success')
-            events.emit('order:sent')
+            orderData.emptyCart()
+            modal.setContent(success.container)
+            modal.render(success.container)
+            success.putSuccessText(data.total)
         })
         .catch(err => {
             console.error(err);
         });
-})
-
-//обработка события отправки формы
-events.on('order:sent', () => {
-    orderData.emptyCart()
 })
 
 //закрытие модального окна

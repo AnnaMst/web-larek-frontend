@@ -1,22 +1,29 @@
+import { Component } from "../base/component";
 import { EventEmitter } from "../base/events";
 
-export class Success {
+interface ISuccess {
+    container: HTMLTemplateElement
+    button: HTMLButtonElement;
+    orderSum: HTMLElement;
+}
+
+export class Success extends Component<ISuccess> {
     container: HTMLTemplateElement
     protected button: HTMLButtonElement;
     orderSum: HTMLElement;
 
     constructor(container: HTMLTemplateElement, events: EventEmitter) {
-            this.container = container;
+            super(container);
+
             this.button = this.container.querySelector('.order-success__close');
             this.orderSum = this.container.querySelector('.order-success__description')
 
             this.button.addEventListener('click', () => {
-                events.emit('success:close');
+                events.emit('modal:close');
             });
     }
 
     putSuccessText (sum:number): void {
-        this.orderSum.textContent = `Списано ${sum} синапсов`
+        this.setText(this.orderSum, `Списано ${sum} синапсов`)
     }
 }
-

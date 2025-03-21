@@ -55,17 +55,17 @@ export class Card extends Component <IProduct> {
 
     set price (cardPrice: number) {
         cardPrice === null ? 
-            this.cardPrice.textContent = 'Бесценно' : 
-            this.cardPrice.textContent = 
+            this.setText(this.cardPrice, 'Бесценно') :
+            this.setText(this.cardPrice, 
                 `${cardPrice.toString().split('').reverse().map((el, index) => 
                     index % 3 !== 2 ? el : ` ${el}`).reverse().join('')
-                } синапсов`
+                } синапсов`)
             ;
     }
 
     set description (description: string) {
         if (this.cardDescription) {
-            this.cardDescription.textContent = description;
+            this.setText(this.cardDescription, description);
         } else {
             console.log('no-description')
         }
@@ -73,7 +73,7 @@ export class Card extends Component <IProduct> {
 
     set category (category: string) {
         if (this.cardCategory) {
-            this.cardCategory.textContent = category
+            this.setText(this.cardCategory, category)
             if (this.cardCategory.textContent ==='софт-скил') {this.cardCategory.classList.add(`card__category_soft`)}
             if (this.cardCategory.textContent ==='другое') {this.cardCategory.classList.add(`card__category_other`)}
             if (this.cardCategory.textContent ==='хард-скил') {this.cardCategory.classList.add(`card__category_hard`)}
@@ -86,7 +86,7 @@ export class Card extends Component <IProduct> {
     }
 
     set title(title: string) {
-        this.cardTitle.textContent = title
+        this.setText(this.cardTitle, title)
     }
 
     set image(image: string) {
@@ -98,7 +98,7 @@ export class Card extends Component <IProduct> {
     }
 
     set _index (index: number) {
-        this.index.textContent = index.toString()
+        this.setText(this.index, index.toString())
     }
 
     get _id():string {

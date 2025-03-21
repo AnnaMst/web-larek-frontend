@@ -1,16 +1,3 @@
-/*Расширение класса Form, класс для формы заказа (выбор оплаты и ввод адреса).
-
-- constructor(container: HTMLElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий
-
-Поля класса:
-- onlinePaymentButton: HTMLElement - кнопка оплаты онлайн
-- offlinePaymentButton: HTMLElement - кнопка оплаты наличными
-
-Методы класса:
-- managePayment(onlinePaymentButton: HTMLElement, offlinePaymentButton: HTMLElement): void - метод реализует выбор способа оплаты в форме
-- handleFormChange(): void - метод расширяет родительский метод, отвечающий за вызов события изменения формы
-- submitForm(): void - метод, отвечающий за сабмит формы: её сохранение и переключение на следующую форму*/
-
 import { ensureElement } from "../../utils/utils";
 import { IEvents } from "../base/events";
 import { Form } from "./Form"
@@ -36,8 +23,6 @@ export class OrderForm extends Form {
         this.cardPaymentButton = this.container.querySelector('button[name="card"]')
         this.cashPaymentButton = this.container.querySelector('button[name="cash"]')
 
-        this.updateValidity()
-
         this.cashPaymentButton.addEventListener('click', (evt) => {
             evt.preventDefault;
             this._events.emit('paymentButton:click', {button: this.cashPaymentButton})
@@ -57,35 +42,7 @@ export class OrderForm extends Form {
                 button.classList.remove('button_alt-active')
             }
         })
-
-        this.updateValidity()
     }
-    
 
-    updateValidity (): void {
-        let isButtonValid = true;
-        let isInputValid = true
 
-        Array.from(this.inputs).forEach((input) => {
-            if (this.validateInput(input.value) === false && input.name === 'address') {
-                this.showInputError('Введите адрес');
-                isInputValid = false
-            } else {
-                this.hideInputError()
-                isInputValid = true
-                this.inputValue = input.value
-            }
-        })
-        
-        const activeButton = Array.from(this.paymentButtons).some((button) =>
-            button.classList.contains('button_alt-active')
-        )
-        
-        if(!activeButton) {
-            this.showInputError('Выберите способ оплаты');
-            isButtonValid = false;
-        }
-
-        this.initValidation(isButtonValid && isInputValid)
-    }
 }

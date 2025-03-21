@@ -2,18 +2,19 @@ import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 
 interface IForm {
-    valid: boolean;
-    error: string
-    inputValues: Record<string, string>;
+    _events: IEvents;
+    submitButton: HTMLButtonElement;
+    formName: string;
+    inputs: NodeListOf<HTMLInputElement>;
+    errorField: HTMLElement;
 }
 
 export abstract class Form extends Component<IForm>{
     protected _events: IEvents;
-    protected submitButton: HTMLElement;
+    protected submitButton: HTMLButtonElement;
     protected formName: string;
     protected inputs: NodeListOf<HTMLInputElement>;
-    protected errorField: HTMLElement;
-    protected _error: string;
+     errorField: HTMLElement;
 
 
     constructor (protected container: HTMLTemplateElement, events: IEvents) {
@@ -31,51 +32,28 @@ export abstract class Form extends Component<IForm>{
             const target = event.target as HTMLInputElement;
             const field = target.name;
             const value = target.value;
-            this._events.emit(`${this.formName}:input`, { field, value })
-            this.updateValidity()
+            this._events.emit(`${field}:input`, { field, value })
         })
 
     }
 
-    protected abstract updateValidity (): void
-
-    //проверка валидности поля input
-    validateInput(inputValue: string): boolean {
-        if (inputValue.trim().length === 0) {
-            return false
-        } else {
-            return true
-        }
-    }
-
-    //Показывает ошибку поля input
-    showInputError(errorText: string): void {
-        this.errorField.textContent = errorText
-    }
-
-    //Скрывает ошибки поля input
-    hideInputError(): void {
-        this.errorField.textContent = ''
-    }
-
     //Валидация кнопки
-    initValidation(isValid: boolean) {
+    initButtonValidation(isValid: boolean) {
         if (isValid === true) {
-            this.submitButton.removeAttribute('disabled') 
-            this.hideInputError()
+            this.setDisabled(this.submitButton, false)
+            this.setText(this.errorField, '')
         } else {
-            this.submitButton.getAttribute('disabled')
+            this.setDisabled(this.submitButton, true)
         }
     }
 
     get form(): HTMLTemplateElement {
-        this.updateValidity()
         return this.container
     }
 
     close(): void {
         this.container.remove;
-        this.hideInputError()
+        this.setText(this.errorField, '')
     }
 
     set inputValues(data: Record<string, string>) {
@@ -84,13 +62,9 @@ export abstract class Form extends Component<IForm>{
 		});
 	}
 
-    set error (data: { field: string; value: string; validInformation: string }) {
-		if (data.validInformation) {
-			this.showInputError(data.field);
-		} else {
-			this.hideInputError();
-		}
-	}
+    setErrors(errorText: string, isValid: boolean): void {
+        isValid === false ? this.setText(this.errorField, errorText) : this.setText(this.errorField, '')
+    }
 
     protected getInputValues(): Record<string, string> {
 		const valuesObject: Record<string, string> = {};

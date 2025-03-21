@@ -19,18 +19,18 @@ export class CardsModal extends Card {
 
     toggleButton(): void {
         if (!this.cardButton.hasAttribute('disabled')) {
-            this.cardButton.setAttribute('disabled', '')
-            this.cardButton.textContent = 'Товар уже в корзине'
+            this.setDisabled(this.cardButton, true)
+            this.setText(this.cardButton, 'Товар уже в корзине')
             this.events.emit('basketItem:changed');
         } else {
-            this.cardButton.removeAttribute('disabled');
-            this.cardButton.textContent = 'Купить'
+            this.setDisabled(this.cardButton, false);
+            this.setText(this.cardButton, 'Купить')
         }
     }
 
     blockButton(): void {
-        this.cardButton.setAttribute('disabled', '')
-        this.cardButton.textContent = 'Этот товар бесценен'
+        this.setDisabled(this.cardButton, true)
+        this.setText(this.cardButton, 'Этот товар бесценен')
     }
     
 }

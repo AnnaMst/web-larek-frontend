@@ -28,6 +28,8 @@ export class Basket  extends Component <IBasket> {
 
         this.setItems([])
 
+        this._button.setAttribute('disabled', '')
+
         if (this._button) {
             this._button.addEventListener('click', () => {
                 events.emit('placeOrder:click');
@@ -50,13 +52,13 @@ export class Basket  extends Component <IBasket> {
 
     handleSum (orderData?: number | null): void {
         if (orderData === 0) {
-            this.basketPrice.textContent = orderData.toString() + ' синапсов'
+            this.setText(this.basketPrice, orderData.toString() + ' синапсов')
             this._button.setAttribute('disabled', '')
         } else if (orderData === null){
-            this.basketPrice.textContent = "0 синапсов"
+            this.setText(this.basketPrice, "0 синапсов")
             this._button.setAttribute('disabled', '')
         } else {
-            this.basketPrice.textContent = orderData.toString() + ' синапсов'
+            this.setText(this.basketPrice, orderData.toString() + ' синапсов')
             this._button.removeAttribute('disabled')
         }
     }

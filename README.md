@@ -157,6 +157,8 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - emptyCart (): void - очищает товары в корзине
 - showItems (): string[] - выводит список товаров в корзине
 - countItems(): number - выводит количество товаров в корзине
+- checkContactsValidation (): boolean - валидирует информацию о контактах клиента (имейл и телефон)
+- checkOrderValidation (): boolean - валидирует информацию о методе платежа и адресе доставки
 
 ### Слой представления
 Отвечает за отображения в контейнере (DOM элементе)
@@ -184,19 +186,8 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 Методы класса:
 - setCounter(value: number): void - устанавливает счётчик товаров в корзине
-- set locked(value: boolean) - блокирует страницу
-
-#### Класс CardsContainer
-Наследует класс Component\
-Реализует выгрузку карточек на страницу.\
-
-- constructor(protected container: HTMLElement) - конструктор принимает DOM элемент
-
-Поля класса:
-- _catalog: HTMLElement - каталог карточек товаров
-
-Методы класса:
 - set catalog(items: HTMLElement[]): [] - выводит каталог на страницу
+- set locked(value: boolean) - блокирует страницу
 
 #### Класс Card
 Наследует класс Component\
@@ -232,18 +223,19 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - close(): void - реализует закрытие модального окна нажатием на кнопку закрытия и по клику вне модального окна
 
 ##### Класс CardModal
-Наследует класс Modal\
-Реализует модальное окно карточки товара с кнопкой "купить"\
+Расширяет класс Card\
+Реализует внешний вид карточки в отдельном модальном окне с кнопкой добавления товара в корзину\
 
 - constructor(protected container: HTMLTemplateElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий, вешает слушатель события на кнопку
 
 Поля класса:
-- cardButton: HTMLButtonElement - кнопка заказа товара
+- cardButton: HTMLButtonElement - кнопка добавления товара в корзину
 - events: IEvents; - брокер событий
 - cardContainer: HTMLElement - контейнер для карточки
 
 Методы класса:
-- toggleButton(): void - переключение кнопки модального окна
+- toggleButton(): void - переключение кнопки добавления в корзину
+- blockButton(): void - метод блокировки кнопки добавления товара (используется для бесценных товаров)
 
 #### Класс Form
 Наследует класс Component\
@@ -261,14 +253,11 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 Методы класса:
 - abstract updateValidity (): void - абстрактный класс, валидирует импуты
-- validateInput(inputValue: string): boolean - проверка валидности поля input
-- showInputError(errorText: string): void - Показывает ошибку поля input
-- hideInputError(): void - Скрывает ошибки поля input
 - initValidation(isValid: boolean) - Валидация кнопки
 - get form(): HTMLTemplateElement - метод получения формы
 - close(): void - метод закрытия формы
 - set inputValues(data: Record<string, string>) - сохранение значения инпутов
-- set error (data: { field: string; value: string; validInformation: string }) - сохранение ошибки
+- setErrors(errorText: string, isValid: boolean): void - сохранение текста ошибки
 - getInputValues(): Record<string, string> - получение значение полей импутов
 
 ##### Класс OrderForm
@@ -285,7 +274,6 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 Методы класса:
 - togglePaymentButton (buttonName: string): void - метод переключениякнопок оплаты
-- updateValidity(): void - метод валидации инпутов
 
 ##### Класс ContactsForm
 Расширение класса Form, класс для записи контактной информации (телефон и имейл)\
@@ -295,11 +283,8 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 Поля класса:
 - submitButton: HTMLButtonElement - кнопка отправки формы
 
-Методы класса:
-- updateValidity(): void - метод валидации инпутов
-
 #### Класс Basket
-Наследует класс Container\
+Наследует класс Component\
 Реализует отрисовку формы корзины и её работу\
 
 - constructor(container: HTMLElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий
@@ -312,10 +297,11 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - span: HTMLElement; - элемент текста суммы всех товаров в корзине
 
 Методы класса:
-- render(cardData: HTMLElement[]): HTMLTemplateElement - рендерит корзину
+- setItems(items?: HTMLElement[]) - метод отображает содержимое корзины. Если товары в неё добавлены, то их, если нет - текст, подсказывающий пользователю, что товары нужно добавить
 - handleSum (orderData: number | null): void - выводит значение суммы корзины
 
 #### Класс Success
+Наследует класс Component\
 Реализует отрисовку формы успеха и её работу\
 
 - constructor(container: HTMLElement, events: IEvents) - конструктор принимает DOM элемент и экземпляр класса 'EventEmitter' для возможности инициации событий
@@ -342,25 +328,22 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 Событие изменения данных (генерируется классами модели данных)
 - 'payment:saved' - сохранение данных оплаты
 - 'address:saved' - сохранение данных адреса
-- 'card:selected' - открытие модального окна с карточкой
-
+- 'card:select' - открытие модального окна с карточкой
+- 'basket:changed' - событие "изменение данных в корзине"
 
 
 События, возникающие при взаимодействии пользователя с интерфейсом (генерируются классами, отвечающими за представление)
-- 'initialData:loaded' - вывод карточек на экран
 - 'cardButton:click' - добавление карточки товара в корзину
-- 'basketItem:changed' - событие "товар добавлен"
 - 'basket:open' - событие "открыть корзину"
-- 'basket:changed' - событие "изменение данных в корзине"
 - 'basketItem:delete' - событие "удалить карточку из корзины"
 - 'placeOrder:click' - событие "оформить"
 - 'paymentButton:click' - событие, обрабатывающее выбор метода оплаты
-- 'order:input' - сохранение значений данных адреса
+- 'address:input' - сохранение значений данных адреса
 - 'order:click' - открытие формы контактов
-- 'contacts:input' - введение значений формы контактов
+- 'email:input' - заполнение инпута имейла
+- 'phone:input' - заполнение инпута телефона
 - 'order:success' - открытие формы успеха
 - 'order:send' - отправка заказа
-- 'order:sent' - обработка события отправки формы
 - 'modal:close' - закрытие модального окна
-- 'modal:open' - блокировка окна
-- 'modal:close' - разблокировка окна
+- 'page:locked' - блокировка окна
+- 'page:unlocked' - разблокировка окна
