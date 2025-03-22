@@ -55,16 +55,21 @@ events.onAll((event) => {
 api.getProducts()
 .then((productInfo) => {
     productData.products = productInfo
+    events.emit('initialData:loaded')
+})
+.catch((err) => {
+    console.error(err);
+});
+
+//вывод карточек на экран
+events.on('initialData:loaded', () => {
     const cardArray = productData.products.map((card) => {
         const cardInstant = new Card(cloneTemplate(cardTemplate), events);
         cardInstant.handleCardOpen()
 
         return cardInstant.render(card)
     })
-    page.setCatalog(cardArray)
-})
-.catch((err) => {
-    console.error(err);
+    page.setCatalog(cardArray)  
 });
 
 //открытие модального окна с карточкой
@@ -136,6 +141,7 @@ events.on('placeOrder:click', () => {
     modal.setContent(orderInfo.render())
     modal.open()
     orderInfo.setErrors('Выберите способ оплаты и введите адрес', orderData.checkOrderValidation())
+    orderInfo.initButtonValidation(orderData.checkOrderValidation())
 });
 
 
@@ -160,6 +166,7 @@ events.on('address:input', (data: { field: string, value: string }) => {
     const {value} = data
     orderData.setAddressData(value)
     orderInfo.initButtonValidation(orderData.checkOrderValidation())
+    orderInfo.setErrors('Заполните, пожалуйста, адрес', orderData.checkOrderValidation())    
 })
 
 //открытие формы контактов
@@ -167,6 +174,7 @@ events.on('order:click', () => {
     //создание темплейта
     modal.setContent(contactsInfo.form)
     modal.render(contactsInfo.render)
+    contactsInfo.initButtonValidation(orderData.checkContactsValidation())
     contactsInfo.setErrors('Введите адрес электронной почты и номер телефона', orderData.checkContactsValidation())
 })
 
@@ -176,7 +184,7 @@ events.on('email:input', (data: { field: string, value: string }) => {
     const{ field } = data
     orderData.setUserData(field, value);
     contactsInfo.initButtonValidation(orderData.checkContactsValidation()) 
-    
+    contactsInfo.setErrors('Введите адрес электронной почты и номер телефона', orderData.checkContactsValidation())    
 })
 
 //заполнение инпута телефона
@@ -184,8 +192,8 @@ events.on('phone:input', (data: { field: string, value: string }) => {
     const {value} = data
     const{ field } = data
     orderData.setUserData(field, value);
-    contactsInfo.initButtonValidation(orderData.checkContactsValidation()) 
-    
+    contactsInfo.initButtonValidation(orderData.checkContactsValidation())
+    contactsInfo.setErrors('Введите адрес электронной почты и номер телефона', orderData.checkContactsValidation())    
 })
 
 //отправка заказа
@@ -194,6 +202,9 @@ events.on('order:send', () => {
         .postOrderData(orderData.getOrderData())
         .then( (data)  => {
             orderData.emptyCart()
+            orderInfo.deleteInputValues()
+            orderInfo.togglePaymentButton('')
+            contactsInfo.deleteInputValues()
             modal.setContent(success.container)
             modal.render(success.container)
             success.putSuccessText(data.total)

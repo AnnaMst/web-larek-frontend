@@ -14,7 +14,7 @@ export abstract class Form extends Component<IForm>{
     protected submitButton: HTMLButtonElement;
     protected formName: string;
     protected inputs: NodeListOf<HTMLInputElement>;
-     errorField: HTMLElement;
+    errorField: HTMLElement;
 
 
     constructor (protected container: HTMLTemplateElement, events: IEvents) {
@@ -53,7 +53,6 @@ export abstract class Form extends Component<IForm>{
 
     close(): void {
         this.container.remove;
-        this.setText(this.errorField, '')
     }
 
     set inputValues(data: Record<string, string>) {
@@ -62,15 +61,22 @@ export abstract class Form extends Component<IForm>{
 		});
 	}
 
-    setErrors(errorText: string, isValid: boolean): void {
-        isValid === false ? this.setText(this.errorField, errorText) : this.setText(this.errorField, '')
-    }
-
-    protected getInputValues(): Record<string, string> {
+    getInputValues(): Record<string, string> {
 		const valuesObject: Record<string, string> = {};
 		this.inputs.forEach((element) => {
 			valuesObject[element.name] = element.value;
 		});
 		return valuesObject;
 	}
+
+    //очищаю поля инпутов
+    deleteInputValues(): void {
+        this.inputs.forEach((element) => {
+			element.value = '';
+		})
+    }
+
+    setErrors(errorText: string, isValid: boolean): void {
+        isValid === false ? this.setText(this.errorField, errorText) : this.setText(this.errorField, '')
+    }
 }

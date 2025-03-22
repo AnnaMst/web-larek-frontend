@@ -9,39 +9,39 @@ interface IPage {
 }
 
 export class Page extends Component<IPage> {
-    protected _counter: HTMLElement;
-    protected _wrapper: HTMLElement;
-    protected _basket: HTMLElement;
-    _catalog: HTMLElement;
+    protected counter: HTMLElement;
+    protected wrapper: HTMLElement;
+    protected basket: HTMLElement;
+    protected catalog: HTMLElement;
 
 
 
     constructor(container: HTMLElement, protected events: IEvents) {
         super(container);
 
-        this._counter = ensureElement<HTMLElement>('.header__basket-counter');
-        this._wrapper = ensureElement<HTMLElement>('.page__wrapper');
-        this._basket = ensureElement<HTMLElement>('.header__basket');
-        this._catalog = ensureElement<HTMLElement>('.gallery')
+        this.counter = ensureElement<HTMLElement>('.header__basket-counter');
+        this.wrapper = ensureElement<HTMLElement>('.page__wrapper');
+        this.basket = ensureElement<HTMLElement>('.header__basket');
+        this.catalog = ensureElement<HTMLElement>('.gallery')
 
-        this._basket.addEventListener('click', () => {
+        this.basket.addEventListener('click', () => {
             this.events.emit('basket:open');
         });
     }
 
     setCounter(value: number): void {
-        this.setText(this._counter, String(value));
+        this.setText(this.counter, String(value));
     }
 
     setCatalog (items: HTMLElement[]) {
-        this._catalog.replaceChildren(...items);
+        this.catalog.replaceChildren(...items);
     }
 
     set locked(value: boolean) {
         if (value) {
-            this._wrapper.classList.add('page__wrapper_locked');
+            this.toggleClass(this.wrapper, 'page__wrapper_locked')
         } else {
-            this._wrapper.classList.remove('page__wrapper_locked');
+            this.toggleClass(this.wrapper, 'page__wrapper_locked')
         }
     }
 }

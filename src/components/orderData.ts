@@ -52,7 +52,7 @@ export class OrderData implements IOrder {
 
     // Метод подсчета общей суммы корзины
     public countTotal(): number {
-        let total = this._items.reduce((accumulator, currentProduct) => {
+        const total = this._items.reduce((accumulator, currentProduct) => {
             return accumulator + currentProduct.price;
         }, 0) || null
 
@@ -79,7 +79,11 @@ export class OrderData implements IOrder {
     }
 
     emptyCart (): void {
-        this._items.length = 0;
+        this._items = [];
+        this.payment = '';
+        this.email = '';
+        this.phone = '';
+        this.address = '';
         this._events.emit('basket:changed')
     }
 
@@ -120,14 +124,6 @@ export class OrderData implements IOrder {
         address: this.address,
         payment: this.payment
         };
-    }
-
-    public deleteItems () {
-        this.payment = '';
-        this.email = '';
-        this.phone = '';
-        this.address = '';
-        this._items = undefined;
     }
 
     checkContactsValidation (): boolean {

@@ -151,10 +151,9 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - setPaymentData(payment: string): void - сохраняет информацию способе оплаты
 - setUserData(field: string, value: string): void - сохраняет данные пользователя
 - getUserData(): { email: string; phone: string; address: string, payment: string } - получает данные пользователя из корзины
-- deleteItems (): метод очищения данных о заказе
 - addToCart(item: string): void - добавляет айди товаров в список товаров корзины
 - removeFromCart(basketItem: string): void - метод для удаления товара из корзины
-- emptyCart (): void - очищает товары в корзине
+- emptyCart (): void - очищает все данные, связанные с корзиной
 - showItems (): string[] - выводит список товаров в корзине
 - countItems(): number - выводит количество товаров в корзине
 - checkContactsValidation (): boolean - валидирует информацию о контактах клиента (имейл и телефон)
@@ -257,6 +256,7 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - get form(): HTMLTemplateElement - метод получения формы
 - close(): void - метод закрытия формы
 - set inputValues(data: Record<string, string>) - сохранение значения инпутов
+- deleteInputValues(): void - очищает поля импутов
 - setErrors(errorText: string, isValid: boolean): void - сохранение текста ошибки
 - getInputValues(): Record<string, string> - получение значение полей импутов
 
@@ -333,6 +333,7 @@ type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 
 События, возникающие при взаимодействии пользователя с интерфейсом (генерируются классами, отвечающими за представление)
+- 'initialData:loaded' - вывод карточек на экран
 - 'cardButton:click' - добавление карточки товара в корзину
 - 'basket:open' - событие "открыть корзину"
 - 'basketItem:delete' - событие "удалить карточку из корзины"

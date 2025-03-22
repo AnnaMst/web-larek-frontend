@@ -43,6 +43,4 @@ export class OrderForm extends Form {
             }
         })
     }
-
-
 }
